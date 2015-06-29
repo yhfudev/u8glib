@@ -81,23 +81,15 @@ void setup(void) {
   u8g_SetUtf8Fonts (g_fontinfo, NUM_ARRAY(g_fontinfo));
 }
 
-void DrawUtf8Str (U8GLIB *this1, unsigned int x, unsigned int y, const char *utf8_msg);
-
-void
-DrawUtf8Str (U8GLIB *this1, unsigned int x, unsigned int y, const char *utf8_msg)
-{
-    u8g_DrawUtf8Str (this1->getU8g(), x, y, utf8_msg);
-}
-
 void u8g_chinese() {
   char s1[] = _U8GT("黄沙百戰穿金甲，");
   char s2[] = _U8GT("不破樓蘭終不還。");
   char buf[20] = _U8GT("Chinese Glyph");
   sprintf (buf, "u32=%d,w=%d,s=%d",sizeof(uint32_t),sizeof(wchar_t),sizeof(size_t));
   //sprintf (buf, "i=%d,l=%d,u=%d",sizeof(int),sizeof(long),sizeof(unsigned));
-  DrawUtf8Str (&u8g, 0, 11, buf);
-  DrawUtf8Str (&u8g, 5, 30, s1);
-  DrawUtf8Str (&u8g, 5, 48, s2);
+  u8g.drawUtf8Str (0, 11, buf);
+  u8g.drawUtf8Str (5, 30, s1);
+  u8g.drawUtf8Str (5, 48, s2);
 }
 
 void draw(void) {

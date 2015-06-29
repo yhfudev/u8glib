@@ -40,6 +40,8 @@
 
 #include "U8glib.h"
 
+#if defined(ARDUINO) || defined(U8G_RASPBERRY_PI)
+
 // setup u8g object, please remove comment from one of the following constructor calls
 // IMPORTANT NOTE: The following list is incomplete. The complete list of supported 
 // devices with all constructor calls is here: http://code.google.com/p/u8glib/wiki/device
@@ -134,6 +136,13 @@
 //U8GLIB_SSD1351_128X128GH_HICOLOR u8g(8, 9, 7); // Arduino, HW SPI Com: SCK = 76, MOSI = 75, CS = 8, A0 = 9, RESET = 7 (Freetronics OLED)
 
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
+
+#else
+#define USE_SDL 1
+// SDL
+U8GLIB u8g(&u8g_dev_sdl_2bit);
+#endif
+
 
 void u8g_prepare(void) {
   u8g.setFont(u8g_font_6x10);
@@ -271,6 +280,17 @@ void draw(void) {
   }
 }
 
+void uiStep(void) {
+#if USE_SDL
+    int key = u8g_sdl_get_key();
+    switch (key) {
+    case 'q':
+    case ' ':
+        exit(0);
+    }
+#endif
+}
+
 void setup(void) {
 
   // flip screen, if required
@@ -289,7 +309,7 @@ void loop(void) {
   do {
     draw();
   } while( u8g.nextPage() );
-  
+  uiStep();
   // increase the state
   draw_state++;
   if ( draw_state >= 9*8 )

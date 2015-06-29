@@ -222,7 +222,7 @@ libu8gwpi_la_LIBADD=$(top_builddir)/libu8gbase.la
 
 BIN_SDL= \
     u8gsdl_2bit u8gsdl_8bit u8gsdl_circle u8gsdl_helloworldpp \
-    u8gsdl_cursor u8gsdl_fonttop u8gsdl_fontutf8test u8gsdl_fullcolor u8gsdl_gabc u8gsdl_gah u8gsdl_greek \
+    u8gsdl_cursor u8gsdl_fonttop u8gsdl_fontutf8test u8gsdl_fullcolor u8gsdl_gabc u8gsdl_gah u8gsdl_greek u8gsdl_gtest \
     u8gsdl_helloworld u8gsdl_hicolor u8gsdl_logo u8gsdl_menu u8gsdl_polygon u8gsdl_xbm \
     u8gsdl_chess u8gsdl_spacetrash \
     u8gsdl_clip \
@@ -278,7 +278,8 @@ u8gsdl_fonttop_SOURCES=sys/sdl/FontPosTop/main.c
 u8gsdl_fonttop_CPPFLAGS=$(libu8gsdl_la_CFLAGS)
 u8gsdl_fonttop_LDFLAGS=-lu8gbase -lu8gsdl $(libu8gsdl_la_LDFLAGS)
 
-u8gsdl_fontutf8test_SOURCES=sys/sdl/fontutf8test/main.c sys/sdl/fontutf8test/fontutf8-data.h
+u8gsdl_fontutf8test_SOURCES=nonarduino/wpimain.cpp sys/arduino/fontutf8test/fontutf8test.cpp sys/arduino/fontutf8test/fontutf8-data.h
+#u8gsdl_fontutf8test_SOURCES=sys/sdl/fontutf8test/main.c sys/sdl/fontutf8test/fontutf8-data.h
 u8gsdl_fontutf8test_CPPFLAGS=$(libu8gsdl_la_CFLAGS)
 u8gsdl_fontutf8test_LDFLAGS=-lu8gbase -lu8gsdl $(libu8gsdl_la_LDFLAGS)
 
@@ -297,6 +298,11 @@ u8gsdl_gah_LDFLAGS=-lu8gbase -lu8gsdl $(libu8gsdl_la_LDFLAGS)
 u8gsdl_greek_SOURCES=sys/sdl/greek/main.c
 u8gsdl_greek_CPPFLAGS=$(libu8gsdl_la_CFLAGS)
 u8gsdl_greek_LDFLAGS=-lu8gbase -lu8gsdl $(libu8gsdl_la_LDFLAGS)
+
+u8gsdl_gtest_SOURCES=nonarduino/wpimain.cpp sys/arduino/GraphicsTest/GraphicsTest.pde
+u8gsdl_gtest_CPPFLAGS=$(libu8gsdl_la_CFLAGS)
+u8gsdl_gtest_LDFLAGS=-lu8gbase -lu8gsdl $(libu8gsdl_la_LDFLAGS)
+
 
 u8gsdl_helloworld_SOURCES=sys/sdl/helloworld/main.c
 u8gsdl_helloworld_CPPFLAGS=$(libu8gsdl_la_CFLAGS)
