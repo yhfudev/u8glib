@@ -188,6 +188,7 @@ SRC_SDL= \
     $(NULL)
 
 include_HEADERS = \
+    $(top_srcdir)/csrc/tree-bsd.h \
     $(top_srcdir)/csrc/u8g.h \
     $(top_srcdir)/cppsrc/U8glib.h \
     $(top_srcdir)/dogmsrc/u8g_dogm128_api.h \
@@ -243,6 +244,7 @@ genpages_SOURCES= \
     tools/font/genpages/getline.c \
     $(NULL)
 
+dist_bin_SCRIPTS=genu8gpages.h
 bin_PROGRAMS=$(BIN_TOOLS) $(BIN_SDL)
 noinst_PROGRAMS=$(BIN_WPI)
 
@@ -365,18 +367,18 @@ u8gwpi_fontutf8test_CFLAGS=$(libu8gwpi_la_CFLAGS)
 u8gwpi_fontutf8test_CPPFLAGS=$(libu8gwpi_la_CFLAGS)
 u8gwpi_fontutf8test_LDFLAGS=-lu8gbase -lu8gwpi $(libu8gwpi_la_LDFLAGS)
 
-sys/sdl/fontutf8test/fontutf8-data.h: sys/sdl/fontutf8test/main.c tools/font/genpages/genpages.sh tools/font/genpages/unifont.bdf # tools/font/genpages/wenquanyi_12pt.bdf
-	cd sys/sdl/fontutf8test/ && ../../../tools/font/genpages/genpages.sh
+sys/sdl/fontutf8test/fontutf8-data.h: sys/sdl/fontutf8test/main.c tools/font/genpages/u8ggenpages.sh tools/font/genpages/unifont.bdf # tools/font/genpages/wenquanyi_12pt.bdf
+	cd sys/sdl/fontutf8test/ && ../../../tools/font/genpages/u8ggenpages.sh
 sys/sdl/fontutf8test/main.c: sys/sdl/fontutf8test/fontutf8-data.h
 	touch sys/sdl/fontutf8test/main.c
 
-sys/arduino/fontutf8test/fontutf8-data.h: sys/arduino/fontutf8test/fontutf8test.cpp tools/font/genpages/genpages.sh tools/font/genpages/unifont.bdf # tools/font/genpages/wenquanyi_12pt.bdf
-	cd sys/arduino/fontutf8test/ && ../../../tools/font/genpages/genpages.sh
+sys/arduino/fontutf8test/fontutf8-data.h: sys/arduino/fontutf8test/fontutf8test.cpp tools/font/genpages/u8ggenpages.sh tools/font/genpages/unifont.bdf # tools/font/genpages/wenquanyi_12pt.bdf
+	cd sys/arduino/fontutf8test/ && ../../../tools/font/genpages/u8ggenpages.sh
 sys/arduino/fontutf8test/fontutf8test.cpp: sys/arduino/fontutf8test/fontutf8-data.h
 	touch sys/arduino/fontutf8test/fontutf8test.cpp
 
-sys/arduino/fontutf8test/genpages.sh: genpages
-	touch sys/arduino/fontutf8test/genpages.sh
+sys/arduino/fontutf8test/u8ggenpages.sh: genpages
+	touch sys/arduino/fontutf8test/u8ggenpages.sh
 tools/font/genpages/unifont-7.0.06.bdf.gz:
 	cd tools/font/genpages && wget http://unifoundry.com/pub/unifont-7.0.06/font-builds/unifont-7.0.06.bdf.gz
 tools/font/genpages/unifont.bdf: tools/font/genpages/unifont-7.0.06.bdf.gz
