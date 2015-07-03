@@ -1290,7 +1290,7 @@ u8g_uint_t u8g_DrawStr270P(u8g_t *u8g, u8g_uint_t x, u8g_uint_t y, const u8g_pgm
 #define NUM_ARRAY(a) (sizeof(a)/sizeof(a[0]))
 #define _U8GT(a) a
 
-#define DEFAULT_FONT u8g_font_9x15
+#define U8G_DEFAULT_FONT u8g_font_9x15
 
 typedef struct _u8g_fontinfo_t {
     int page;
@@ -1306,14 +1306,9 @@ typedef struct _u8g_fontinfo_t {
 #endif
 } u8g_fontinfo_t;
 
-extern int fontinfo_init (u8g_fontinfo_t * fntinfo, int number);
-extern char fontinfo_isinited(void);
-//void u8g_SetUtf8Fonts (u8g_fontinfo_t * fntinfo, int number);
-//char u8g_Utf8FontIsInited(void);
-#define u8g_SetUtf8Fonts        fontinfo_init
-#define u8g_Utf8FontIsInited    fontinfo_isinited
-
-void u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg);
+extern int u8g_SetUtf8Fonts (u8g_fontinfo_t * fntinfo, int number);
+extern char u8g_Utf8FontIsInited(void);
+extern void u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg);
 
 
 void u8g_SetFontRefHeightText(u8g_t *u8g);

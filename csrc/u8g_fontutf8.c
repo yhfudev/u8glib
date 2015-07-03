@@ -1,5 +1,5 @@
 /**
- * @file    fontutf8u8g.cpp
+ * @file    fontutf8.c
  * @brief   font api for u8g lib
  * @author  Yunhui Fu (yhfudev@gmail.com)
  * @version 1.0
@@ -9,6 +9,17 @@
 
 #include <string.h>
 #include "u8g.h"
+
+#define font_t void
+#if USE_RBTREE_LINUX
+#define font_group_t struct rb_root
+#else
+#define font_group_t struct _u8g_fontinfo_entries_t
+#endif
+typedef void (* fontgroup_cb_draw_t)(void *userdata, font_t *fnt_current, const char *msg);
+//extern int fontgroup_init (font_group_t * root, u8g_fontinfo_t * fntinfo, int number);
+//extern int fontgroup_drawstring (font_group_t * group, font_t *fnt_default, const char *utf8_msg, void * userdata, fontgroup_cb_draw_t cb_draw);
+//extern u8g_fontinfo_t * fontgroup_first (font_group_t * root);
 
 #if defined(ARDUINO)
 // there's overflow of the wchar_t due to the 2-byte size in Arduino
@@ -32,7 +43,7 @@
 #define TRACE(...)
 #endif
 
-wchar_t
+static wchar_t
 get_val_utf82uni (uint8_t *pstart)
 {
     size_t cntleft;
@@ -81,7 +92,7 @@ get_val_utf82uni (uint8_t *pstart)
  *
  * 转换 UTF-8 编码的一个字符为本地的 Unicode 字符(wchar_t)
  */
-uint8_t *
+static uint8_t *
 get_utf8_value (uint8_t *pstart, wchar_t *pval)
 {
     uint32_t val = 0;
@@ -184,21 +195,17 @@ fontinfo_compare (u8g_fontinfo_t * v1, u8g_fontinfo_t * v2)
     return 0;
 }
 
-#if USE_RBTREE_LINUX
-struct rb_root g_fontinfo_root = RB_ROOT;
-#else
-RB_HEAD(_u8g_fontinfo_entries_t, _u8g_fontinfo_t) g_fontinfo_root = RB_INITIALIZER(&g_fontinfo_root);
+#if ! USE_RBTREE_LINUX
+RB_HEAD(_u8g_fontinfo_entries_t, _u8g_fontinfo_t);
 RB_PROTOTYPE(_u8g_fontinfo_entries_t, _u8g_fontinfo_t, node, fontinfo_compare);
 RB_GENERATE(_u8g_fontinfo_entries_t, _u8g_fontinfo_t, node, fontinfo_compare);
 #endif
 
-char flag_fontinfo_inited = 0;
 
 static int
-fontinfo_insert (void * root_arg, u8g_fontinfo_t *data)
+fontgroup_insert (font_group_t * root, u8g_fontinfo_t *data)
 {
 #if USE_RBTREE_LINUX
-    struct rb_root *root = (struct rb_root *) root_arg;
     struct rb_node **new1 = &(root->rb_node), *parent = NULL;
     // Figure out where to put new node
     while (*new1) {
@@ -221,62 +228,43 @@ fontinfo_insert (void * root_arg, u8g_fontinfo_t *data)
     rb_insert_color(&data->node, root);
 
 #else
-    RB_INSERT(_u8g_fontinfo_entries_t, (struct _u8g_fontinfo_entries_t *) root_arg, data);
+    RB_INSERT(_u8g_fontinfo_entries_t, root, data);
 #endif
 
     return TRUE;
 }
 
-int
-fontinfo_init (u8g_fontinfo_t * fntinfo, int number)
+static int
+fontgroup_init (font_group_t * root, u8g_fontinfo_t * fntinfo, int number)
 {
     int i;
 
-#if USE_RBTREE_LINUX
-    struct rb_root *root = &g_fontinfo_root;
-#else
-    void * root = &g_fontinfo_root;
-#endif
-
     for (i = 0; i < number; i ++) {
-        fontinfo_insert ((void *)root, &fntinfo[i]);
+        fontgroup_insert (root, &fntinfo[i]);
     }
-    flag_fontinfo_inited = 1;
 
     return 0;
 }
 
-/**
- * @brief check if font is loaded
- */
-char
-fontinfo_isinited(void)
+static u8g_fontinfo_t *
+fontgroup_first (font_group_t * root)
 {
-    return flag_fontinfo_inited;
+    u8g_fontinfo_t *data = NULL;
+    RB_FOREACH(data, _u8g_fontinfo_entries_t, root)
+        return data;
+    return NULL;
 }
 
-const u8g_fntpgm_uint8_t *
-fontinfo_find (wchar_t val)
+static const font_t *
+fontgroup_find (font_group_t * root, wchar_t val)
 {
     u8g_fontinfo_t *data = NULL;
     // calculate the page
     u8g_fontinfo_t vcmp = {val / 128, val % 128 + 128, val % 128 + 128, 0, 0};
 
 #if USE_RBTREE_LINUX
-    struct rb_root *root = &g_fontinfo_root;
     struct rb_node *node = root->rb_node;
-#else
-    struct _u8g_fontinfo_entries_t * root = &g_fontinfo_root;
-#endif
 
-    if (flag_fontinfo_inited == 0) {
-        return NULL;
-    }
-    if (val < 128) {
-        return DEFAULT_FONT; //u8g_font_gdr25;
-    }
-
-#if USE_RBTREE_LINUX
     while (node) {
         int result;
         data = container_of(node, u8g_fontinfo_t, node);
@@ -302,24 +290,16 @@ fontinfo_find (wchar_t val)
     return NULL;
 }
 
-/**
- * @brief draw a UTF-8 string
- */
-void
-u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg)
+static int
+fontgroup_drawstring (font_group_t * group, font_t *fnt_default, const char *utf8_msg, void * userdata, fontgroup_cb_draw_t cb_draw)
 {
     int len;
     uint8_t *pend = NULL;
     uint8_t *p;
     wchar_t val;
     uint8_t buf[2] = {0, 0};
-    u8g_fntpgm_uint8_t * fntpqm = NULL;
+    font_t * fntpqm = NULL;
 
-    if (! fontinfo_isinited()) {
-        u8g_DrawStr (pu8g, x, y, "Err: utf8 font not initialized.");
-        return;
-    }
-    //u8g_DrawStr(pu8g, x, y, utf8_msg);
     len = strlen(utf8_msg);
     pend = (uint8_t *)utf8_msg + len;
     for (p = (uint8_t *)utf8_msg; p < pend; ) {
@@ -331,21 +311,87 @@ u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_m
         }
         TRACE("got char=%d", (int)val);
         buf[0] = (uint8_t)(val & 0x7F);
-        fntpqm = (u8g_fntpgm_uint8_t *)fontinfo_find (val);
+        fntpqm = (font_t *)fontgroup_find (group, val);
         if (NULL == fntpqm) {
             //continue;
-            buf[0] = '?';
-            fntpqm = (u8g_fntpgm_uint8_t *)DEFAULT_FONT;
+            //buf[0] = '?';
+            fntpqm = fnt_default;
             TRACE("Unknown char, use default font");
         }
-        if (DEFAULT_FONT != fntpqm) {
+        if (fnt_default != fntpqm) {
             buf[0] |= 0x80; // use upper page to avoid 0x00 error in C. you may want to generate the font data
         }
-        TRACE("set font: %p; (default=%p)", fntpqm, DEFAULT_FONT);
-        u8g_SetFont (pu8g, fntpqm);
+        TRACE("set font: %p; (default=%p)", fntpqm, U8G_DEFAULT_FONT);
 
-        u8g_DrawStr(pu8g, x, y, (char *) buf);
-        x += u8g_GetStrWidth(pu8g, (char *)buf);
-        TRACE("next pos= %d", x);
+        cb_draw(userdata, fntpqm, (char *) buf);
     }
+}
+
+
+#if USE_RBTREE_LINUX
+font_group_t g_fontgroup_root = RB_ROOT;
+#else
+font_group_t g_fontgroup_root = RB_INITIALIZER(&g_fontgroup_root);
+#endif
+
+char flag_fontgroup_inited = 0;
+
+#define fontinfo_find(val)              fontinfo_find0((font_group_t *)(&g_fontgroup_root), val)
+
+/**
+ * @brief check if font is loaded
+ */
+char
+u8g_Utf8FontIsInited(void)
+{
+    return flag_fontgroup_inited;
+}
+
+int
+u8g_SetUtf8Fonts (u8g_fontinfo_t * fntinfo, int number)
+{
+    flag_fontgroup_inited = 1;
+    return fontgroup_init (&g_fontgroup_root, fntinfo, number);
+}
+
+struct _u8g_drawu8_data_t {
+    u8g_t *pu8g;
+    int x;
+    int y;
+    void * fnt_prev;
+};
+
+static void
+fontgroup_cb_draw_u8g (void *userdata, font_t *fnt_current, const char *msg)
+{
+    struct _u8g_drawu8_data_t * pdata = userdata;
+
+    assert (NULL != userdata);
+    if (pdata->fnt_prev != fnt_current) {
+        u8g_SetFont (pdata->pu8g, fnt_current);
+        u8g_SetFontPosBottom (pdata->pu8g);
+        pdata->fnt_prev = fnt_current;
+    }
+    u8g_DrawStr(pdata->pu8g, pdata->x, pdata->y, (char *) msg);
+    pdata->x += u8g_GetStrWidth(pdata->pu8g, (char *)msg);
+    TRACE("next pos= %d", pdata->x);
+}
+
+/**
+ * @brief draw a UTF-8 string
+ */
+void
+u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg)
+{
+    struct _u8g_drawu8_data_t data;
+
+    if (! u8g_Utf8FontIsInited()) {
+        u8g_DrawStr (pu8g, x, y, "Err: utf8 font not initialized.");
+        return;
+    }
+    data.pu8g = pu8g;
+    data.x = x;
+    data.y = y;
+    data.fnt_prev = NULL;
+    fontgroup_drawstring (&g_fontgroup_root, U8G_DEFAULT_FONT, utf8_msg, (void *)&data, fontgroup_cb_draw_u8g);
 }
