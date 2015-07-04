@@ -42,6 +42,9 @@ echo "EXEC_GENPAGES=${EXEC_GENPAGES}"
 
 EXEC_BDF2U8G=${DN_EXEC}/bdf2u8g
 if [ ! -x "${EXEC_BDF2U8G}" ]; then
+    EXEC_BDF2U8G=${DN_EXEC}/../../../bdf2u8g
+fi
+if [ ! -x "${EXEC_BDF2U8G}" ]; then
     EXEC_BDF2U8G=$(which bdf2u8g)
 fi
 if [ ! -x "${EXEC_BDF2U8G}" ]; then
