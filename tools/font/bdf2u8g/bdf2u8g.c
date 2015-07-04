@@ -479,7 +479,8 @@ int bdf_char_y;            /* BBX arg 4 */
 int bdf_char_max_y;
 int bdf_char_min_y;
 
-int bdf_delta_x;           /* DWIDTH arg 1 */
+int bdf_delta_x_default = -1;
+int bdf_delta_x = -1;           /* DWIDTH arg 1 */
 int bdf_delta_max_x;
 int bdf_delta_min_x;
 int bdf_delta_y;           /* DWIDTH arg 2 */
@@ -1089,6 +1090,22 @@ void bdf_ReadLine(const char *s)
       bdf_char_y = p_get_val();
       bdf_char_ascent = bdf_char_height + bdf_char_y;
       //printf("h:%d w:%d ascent: %d\n", bdf_char_height, bdf_char_width, bdf_char_ascent);
+    }
+    else if ( strcmp(p_buf, "CHARS") == 0 )
+    {
+        if (bdf_delta_x < 0) {
+            bdf_delta_x = 0;
+        }
+        if (bdf_delta_x_default < 0) {
+            bdf_delta_x_default = bdf_delta_x;
+        }
+    }
+    else if ( strcmp(p_buf, "STARTCHAR") == 0 )
+    {
+        if (bdf_delta_x_default < 0) {
+            bdf_delta_x_default = 0;
+        }
+        bdf_delta_x = bdf_delta_x_default;
     }
     else if ( strcmp(p_buf, "BITMAP") == 0 )
     {
