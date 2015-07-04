@@ -41,12 +41,13 @@
 
 */
 
-#include "u8g.h"
 #include <string.h>
 
 #ifdef __unix__
 #include <assert.h>
 #endif
+
+#include "u8g.h"
 
 /* NEW_CODE disabled, because the performance increase was too slow and not worth compared */
 /* to the increase of code size */

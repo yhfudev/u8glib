@@ -172,13 +172,8 @@ void data_Write(FILE *out_fp, const char *indent)
 {
   int i;
   int bytes_per_line = 16;
-  for( i = 0; i < data_pos; i++ )
-  {
-#ifdef BDF2U8G_COMPACT_OUTPUT
-    fprintf(out_fp, "%d", data_buf[i]);
-#else
-    fprintf(out_fp, "%3d", data_buf[i]);
-#endif
+  for( i = 0; i < data_pos; i++ ) {
+    fprintf(out_fp, "0x%2X", data_buf[i]);
     if ( i+1 != data_pos )
       fprintf(out_fp, ",");
     if ( (i+1) % bytes_per_line == 0 )

@@ -49,9 +49,7 @@ SRC_BASE= \
     csrc/u8g_u16toa.c \
     csrc/u8g_u8toa.c \
     sfntsrc/u8g_font_data.c \
-    sys/pbm/dev/u8g_dev_pbm.c \
-    sys/pbm/dev/u8g_dev_pbm_gr_h2.c \
-    sys/pbm/dev/u8g_dev_pbm_h.c \
+    \
     $(NULL)
 
 SRC_COMMON_ALG= \
@@ -63,6 +61,16 @@ SRC_COMMON_ALG= \
     csrc/u8g_font.c \
     csrc/u8g_fontutf8.c \
     csrc/u8g_line.c \
+    csrc/u8g_pbxh16.c \
+    csrc/u8g_pbxh24.c \
+    csrc/u8g_polygon.c \
+    csrc/u8g_rect.c \
+    csrc/u8g_rot.c \
+    csrc/u8g_scale.c \
+    csrc/u8g_virtual_screen.c \
+    $(NULL)
+
+SRC_COMMON_DRV= \
     csrc/u8g_pb14v1.c \
     csrc/u8g_pb16h1.c \
     csrc/u8g_pb16h2.c \
@@ -76,19 +84,14 @@ SRC_COMMON_ALG= \
     csrc/u8g_pb8v1.c \
     csrc/u8g_pb8v2.c \
     csrc/u8g_pb.c \
-    csrc/u8g_pbxh16.c \
-    csrc/u8g_pbxh24.c \
-    csrc/u8g_polygon.c \
-    csrc/u8g_rect.c \
-    csrc/u8g_rot.c \
-    csrc/u8g_scale.c \
-    csrc/u8g_virtual_screen.c \
-    $(NULL)
-
-SRC_COMMON_DRV= \
+    csrc/u8g_com_api.c \
+    \
+    sys/pbm/dev/u8g_dev_pbm.c \
+    sys/pbm/dev/u8g_dev_pbm_gr_h2.c \
+    sys/pbm/dev/u8g_dev_pbm_h.c \
+    \
     csrc/chessengine.c \
     csrc/u8g_com_api_16gr.c \
-    csrc/u8g_com_api.c \
     csrc/u8g_com_arduino_attiny85_hw_spi.c \
     csrc/u8g_com_arduino_common.c \
     csrc/u8g_com_arduino_fast_parallel.c \

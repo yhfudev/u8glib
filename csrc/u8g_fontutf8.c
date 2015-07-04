@@ -8,6 +8,7 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 #include "u8g.h"
 
 #define font_t void

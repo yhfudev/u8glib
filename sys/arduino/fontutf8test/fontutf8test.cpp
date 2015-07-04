@@ -84,8 +84,8 @@ void setup(void) {
 
 #define NUM_TYPE(a) (sizeof(a)/sizeof(a[0]))
 char * teststrings[] = {
-    _U8GT("黄沙百戰穿金甲，"),
-    _U8GT("不破樓蘭終不還。"),
+    _U8GT("黄沙百戰穿金甲"),
+    _U8GT("不破樓蘭終不還"),
     _U8GT("ナイン"),
     _U8GT("セード ンウニユウアレマシタ"),
     _U8GT("セードゼアリマセン"),
@@ -109,9 +109,10 @@ void u8g_chinese() {
     s2 = teststrings[cnt];
     s3 = teststrings[(cnt + 1) % NUM_TYPE(teststrings)];
 
-    u8g.drawUtf8Str (1, 18, s1);
     u8g.drawUtf8Str (5, 36, s2);
     u8g.drawUtf8Str (5, 54, s3);
+    sprintf (buf, "linespace=%d", u8g.getFontLineSpacing());
+    u8g.drawUtf8Str (1, 18, s1);
 }
 
 void draw(void) {

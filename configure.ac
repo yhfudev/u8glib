@@ -22,8 +22,8 @@ AC_PROG_LIBTOOL
 
 # Checks for libraries.
 LT_PREREQ([2.2])
-#LT_INIT([shared static])
-LT_INIT([disable-static])
+LT_INIT([shared static])
+#LT_INIT([disable-static])
 
 # debug
 AC_ARG_ENABLE([debug],

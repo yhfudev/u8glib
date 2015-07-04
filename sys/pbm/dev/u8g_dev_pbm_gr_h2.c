@@ -17,10 +17,10 @@
 #define HEIGHT 64
 #define PAGE_HEIGHT 4
 
-
+#ifdef __unix__
 extern void *u8g_buf_lower_limit;
 extern void *u8g_buf_upper_limit;
-
+#endif
 
 uint8_t u8g_dev_pbm_h2_enable = 1;
 
@@ -47,7 +47,7 @@ uint8_t u8g_dev_pbm_8h2_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *arg)
   {
     
     case U8G_DEV_MSG_PAGE_FIRST:
-#ifdef __unix__      
+#ifdef __unix__
       u8g_buf_lower_limit = u8g_pb_dev_pbm_buf;
       u8g_buf_upper_limit = u8g_pb_dev_pbm_buf + WIDTH;
 #endif

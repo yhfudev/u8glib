@@ -995,6 +995,9 @@ void u8g_UpdateRefHeight(u8g_t *u8g)
   {
     u8g->font_ref_ascent = u8g_font_GetFontXAscent(u8g->font);
     u8g->font_ref_descent = u8g_font_GetFontXDescent(u8g->font);
+    if (0 == u8g->font_ref_ascent) {
+        u8g->font_ref_ascent = u8g_font_GetFontAscent(u8g->font);
+    }
   }
   else
   {
