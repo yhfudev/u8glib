@@ -247,7 +247,7 @@ genpages_SOURCES= \
     tools/font/genpages/getline.c \
     $(NULL)
 
-dist_bin_SCRIPTS=genu8gpages.h
+dist_bin_SCRIPTS=tools/font/genpages/u8ggenpages.sh
 bin_PROGRAMS=$(BIN_TOOLS) $(BIN_SDL)
 noinst_PROGRAMS=$(BIN_WPI)
 
