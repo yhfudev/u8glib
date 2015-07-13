@@ -30,6 +30,8 @@
 
 #include "fontutf8-data.h"
 
+//#include "bleeding-cowboys.h"
+
 #if defined(ARDUINO) || defined(U8G_RASPBERRY_PI)
 
 #if 0
@@ -67,6 +69,7 @@ U8GLIB u8g(&u8g_dev_sdl_2bit);
 
 void u8g_prepare(void) {
     u8g.setFont(u8g_font_6x10);
+    //u8g.setFont(bleeding_cowboys);
     u8g.setFontRefHeightExtendedText();
     u8g.setDefaultForegroundColor();
     u8g.setFontPosTop();
@@ -80,6 +83,24 @@ void setup(void) {
 #endif
     u8g_prepare();
     u8g_SetUtf8Fonts (g_fontinfo, NUM_ARRAY(g_fontinfo));
+}
+
+void u8g_ascii() {
+    //char * s1 = "The quick brown";
+    char * s1 = "next";
+    char * s2 = "fox jumps over the";
+    char * s3 = "lazy dog.";
+    char buf[20] = _U8GT("ASCII Glyph");
+    //sprintf (buf, "u32=%d,w=%d,s=%d",sizeof(uint32_t),sizeof(wchar_t),sizeof(size_t));
+    //sprintf (buf, "i=%d,l=%d,u=%d",sizeof(int),sizeof(long),sizeof(unsigned));
+
+    //s1 = buf;
+    //s2 = teststrings[cnt];
+    //s3 = teststrings[(cnt + 1) % NUM_TYPE(teststrings)];
+
+    u8g.drawStr (1, 18, s1);
+    u8g.drawStr (5, 36, s2);
+    u8g.drawStr (5, 54, s3);
 }
 
 #define NUM_TYPE(a) (sizeof(a)/sizeof(a[0]))
@@ -111,12 +132,13 @@ void u8g_chinese() {
 
     u8g.drawUtf8Str (5, 36, s2);
     u8g.drawUtf8Str (5, 54, s3);
-    sprintf (buf, "linespace=%d", u8g.getFontLineSpacing());
+    //sprintf (buf, "ls=%d, wid=%d", u8g.getFontLineSpacing(), u8g.getUtf8StrPixelWidth(s3));
     u8g.drawUtf8Str (1, 18, s1);
 }
 
 void draw(void) {
-  u8g_chinese();
+    u8g_chinese();
+    //u8g_ascii();
 }
 
 // calculate new output values

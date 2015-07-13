@@ -310,7 +310,7 @@ fontgroup_drawstring (font_group_t * group, font_t *fnt_default, const char *utf
             TRACE("No more char, break ...");
             break;
         }
-        TRACE("got char=%d", (int)val);
+        //TRACE("got char=%d", (int)val);
         buf[0] = (uint8_t)(val & 0x7F);
         fntpqm = (font_t *)fontgroup_find (group, val);
         if (NULL == fntpqm) {
@@ -322,7 +322,7 @@ fontgroup_drawstring (font_group_t * group, font_t *fnt_default, const char *utf
         if (fnt_default != fntpqm) {
             buf[0] |= 0x80; // use upper page to avoid 0x00 error in C. you may want to generate the font data
         }
-        TRACE("set font: %p; (default=%p)", fntpqm, U8G_DEFAULT_FONT);
+        //TRACE("set font: %p; (default=%p)", fntpqm, U8G_DEFAULT_FONT);
 
         cb_draw(userdata, fntpqm, (char *) buf);
     }
@@ -375,7 +375,7 @@ fontgroup_cb_draw_u8g (void *userdata, font_t *fnt_current, const char *msg)
     }
     u8g_DrawStr(pdata->pu8g, pdata->x, pdata->y, (char *) msg);
     pdata->x += u8g_GetStrWidth(pdata->pu8g, (char *)msg);
-    TRACE("next pos= %d", pdata->x);
+    //TRACE("next pos= %d", pdata->x);
 }
 
 /**
@@ -385,6 +385,8 @@ void
 u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg)
 {
     struct _u8g_drawu8_data_t data;
+    font_group_t * group = &g_fontgroup_root;
+    font_t *fnt_default = U8G_DEFAULT_FONT;
 
     if (! u8g_Utf8FontIsInited()) {
         u8g_DrawStr (pu8g, x, y, "Err: utf8 font not initialized.");
@@ -394,5 +396,102 @@ u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_m
     data.x = x;
     data.y = y;
     data.fnt_prev = NULL;
-    fontgroup_drawstring (&g_fontgroup_root, U8G_DEFAULT_FONT, utf8_msg, (void *)&data, fontgroup_cb_draw_u8g);
+    fontgroup_drawstring (group, fnt_default, utf8_msg, (void *)&data, fontgroup_cb_draw_u8g);
+}
+
+static void
+fontgroup_cb_drawp_u8g (void *userdata, font_t *fnt_current, const char *msg)
+{
+    struct _u8g_drawu8_data_t * pdata = userdata;
+
+    assert (NULL != userdata);
+    if (pdata->fnt_prev != fnt_current) {
+        u8g_SetFont (pdata->pu8g, fnt_current);
+        u8g_SetFontPosBottom (pdata->pu8g);
+        pdata->fnt_prev = fnt_current;
+    }
+    u8g_DrawStrP(pdata->pu8g, pdata->x, pdata->y, (char *) msg);
+    pdata->x += u8g_GetStrWidthP(pdata->pu8g, (char *)msg);
+    //TRACE("next pos= %d", pdata->x);
+}
+
+void
+u8g_DrawUtf8StrP (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg)
+{
+    struct _u8g_drawu8_data_t data;
+    font_group_t * group = &g_fontgroup_root;
+    font_t *fnt_default = U8G_DEFAULT_FONT;
+
+    if (! u8g_Utf8FontIsInited()) {
+        u8g_DrawStr (pu8g, x, y, "Err: utf8 font not initialized.");
+        return;
+    }
+    data.pu8g = pu8g;
+    data.x = x;
+    data.y = y;
+    data.fnt_prev = NULL;
+    fontgroup_drawstring (group, fnt_default, utf8_msg, (void *)&data, fontgroup_cb_drawp_u8g);
+}
+
+static void
+fontgroup_cb_draw_u8gstrlen (void *userdata, font_t *fnt_current, const char *msg)
+{
+    struct _u8g_drawu8_data_t * pdata = userdata;
+
+    assert (NULL != userdata);
+    if (pdata->fnt_prev != fnt_current) {
+        u8g_SetFont (pdata->pu8g, fnt_current);
+        u8g_SetFontPosBottom (pdata->pu8g);
+        pdata->fnt_prev = fnt_current;
+    }
+    pdata->x += u8g_GetStrPixelWidth(pdata->pu8g, (char *)msg);
+}
+
+int
+u8g_GetUtf8StrPixelWidth(u8g_t *pu8g, char *utf8_msg)
+{
+    struct _u8g_drawu8_data_t data;
+    font_group_t * group = &g_fontgroup_root;
+    font_t *fnt_default = U8G_DEFAULT_FONT;
+
+    if (! u8g_Utf8FontIsInited()) {
+        TRACE("Err: utf8 font not initialized.");
+        return -1;
+    }
+
+    memset (&data, 0, sizeof (data));
+    data.pu8g = pu8g;
+    fontgroup_drawstring (group, fnt_default, utf8_msg, (void *)&data, fontgroup_cb_draw_u8gstrlen);
+    return data.x;
+}
+
+static void
+fontgroup_cb_drawp_u8gstrlen (void *userdata, font_t *fnt_current, const char *msg)
+{
+    struct _u8g_drawu8_data_t * pdata = userdata;
+
+    assert (NULL != userdata);
+    if (pdata->fnt_prev != fnt_current) {
+        u8g_SetFont (pdata->pu8g, fnt_current);
+        u8g_SetFontPosBottom (pdata->pu8g);
+        pdata->fnt_prev = fnt_current;
+    }
+    pdata->x += u8g_GetStrPixelWidthP(pdata->pu8g, (char *)msg);
+}
+
+int
+u8g_GetUtf8StrPixelWidthP(u8g_t *pu8g, char *utf8_msg)
+{
+    struct _u8g_drawu8_data_t data;
+    font_group_t * group = &g_fontgroup_root;
+    font_t *fnt_default = U8G_DEFAULT_FONT;
+
+    if (! u8g_Utf8FontIsInited()) {
+        TRACE("Err: utf8 font not initialized.");
+        return -1;
+    }
+    memset (&data, 0, sizeof (data));
+    data.pu8g = pu8g;
+    fontgroup_drawstring (group, fnt_default, utf8_msg, (void *)&data, fontgroup_cb_drawp_u8gstrlen);
+    return data.x;
 }

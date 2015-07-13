@@ -1309,6 +1309,9 @@ typedef struct _u8g_fontinfo_t {
 extern int u8g_SetUtf8Fonts (u8g_fontinfo_t * fntinfo, int number);
 extern char u8g_Utf8FontIsInited(void);
 extern void u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg);
+extern void u8g_DrawUtf8StrP (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg);
+extern int u8g_GetUtf8StrPixelWidth(u8g_t *pu8g, char *utf8_msg);
+extern int u8g_GetUtf8StrPixelWidthP(u8g_t *pu8g, char *utf8_msg);
 
 
 void u8g_SetFontRefHeightText(u8g_t *u8g);

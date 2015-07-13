@@ -375,14 +375,18 @@ sys/sdl/fontutf8test/fontutf8-data.h: sys/sdl/fontutf8test/main.c tools/font/gen
 sys/sdl/fontutf8test/main.c: sys/sdl/fontutf8test/fontutf8-data.h
 	touch sys/sdl/fontutf8test/main.c
 
-sys/arduino/fontutf8test/fontutf8-data.h: sys/arduino/fontutf8test/fontutf8test.cpp tools/font/genpages/u8ggenpages.sh tools/font/bdf/unifont.bdf # tools/font/genpages/wenquanyi_12pt.bdf
-	cd sys/arduino/fontutf8test/ && ../../../tools/font/genpages/u8ggenpages.sh ../../../tools/font/bdf/unifont.bdf
+sys/arduino/fontutf8test/fontutf8-data.h: sys/arduino/fontutf8test/fontutf8test.cpp tools/font/genpages/u8ggenpages.sh sys/arduino/fontutf8test/unifont.bdf #tools/font/bdf/unifont.bdf # tools/font/genpages/wenquanyi_12pt.bdf
+	cd sys/arduino/fontutf8test/ && ../../../tools/font/genpages/u8ggenpages.sh unifont.bdf # ../../../tools/font/bdf/unifont.bdf
 sys/arduino/fontutf8test/fontutf8test.cpp: sys/arduino/fontutf8test/fontutf8-data.h
 	touch sys/arduino/fontutf8test/fontutf8test.cpp
 
 sys/arduino/fontutf8test/u8ggenpages.sh: genpages
 	touch sys/arduino/fontutf8test/u8ggenpages.sh
-tools/font/genpages/unifont-7.0.06.bdf.gz:
-	cd tools/font/genpages && wget http://unifoundry.com/pub/unifont-7.0.06/font-builds/unifont-7.0.06.bdf.gz
-tools/font/genpages/unifont.bdf: tools/font/genpages/unifont-7.0.06.bdf.gz
-	cd tools/font/genpages && gunzip -c unifont-7.0.06.bdf.gz > unifont.bdf
+tools/font/genpages/unifont-8.0.01.bdf.gz:
+	wget -c -O $@ http://ftp.gnu.org/gnu/unifont/unifont-8.0.01/unifont-8.0.01.bdf.gz
+	touch $@
+tools/font/genpages/unifont.bdf: tools/font/genpages/unifont-8.0.01.bdf.gz
+	gunzip -c $< > $@
+
+sys/arduino/fontutf8test/unifont.bdf: ../hzk/0jingxuan/MingLan_UI-10.bdf
+	cp $< $@

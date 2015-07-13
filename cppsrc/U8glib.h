@@ -208,6 +208,9 @@ class U8GLIB : public Print
 #endif
     // u8g_SetUtf8Fonts() in u8g.h
     void drawUtf8Str (unsigned int x, unsigned int y, const char *utf8_msg) { u8g_DrawUtf8Str(&u8g, x, y, utf8_msg); }
+    void drawUtf8StrP (unsigned int x, unsigned int y, const char *utf8_msg) { u8g_DrawUtf8StrP(&u8g, x, y, utf8_msg); }
+    int getUtf8StrPixelWidth(char *utf8_msg) {return u8g_GetUtf8StrPixelWidth(&u8g, utf8_msg);}
+    int getUtf8StrPixelWidthP(char *utf8_msg) {return u8g_GetUtf8StrPixelWidthP(&u8g, utf8_msg);}
 
     /* cursor handling */
     void setCursorFont(const u8g_pgm_uint8_t *cursor_font) { u8g_SetCursorFont(&u8g, cursor_font); }
