@@ -8,15 +8,17 @@
  */
 
 #include <string.h>
-#include <stdio.h>
+
 #include "u8g.h"
 
-#define font_t void
-#if USE_RBTREE_LINUX
-#define font_group_t struct rb_root
-#else
-#define font_group_t struct _u8g_fontinfo_entries_t
+#if ! defined(__AVR__)
+//#define pgm_read_word_near(a) *((uint16_t *)(a))
+#define pgm_read_word_near(a) (*(a))
+#define pgm_read_byte_near(a) *((uint8_t *)(a))
+#define memcpy_P memcpy
 #endif
+
+#define font_t void
 typedef void (* fontgroup_cb_draw_t)(void *userdata, font_t *fnt_current, const char *msg);
 //extern int fontgroup_init (font_group_t * root, u8g_fontinfo_t * fntinfo, int number);
 //extern int fontgroup_drawstring (font_group_t * group, font_t *fnt_default, const char *utf8_msg, void * userdata, fontgroup_cb_draw_t cb_draw);
@@ -37,12 +39,110 @@ typedef void (* fontgroup_cb_draw_t)(void *userdata, font_t *fnt_current, const 
 #define TRUE  1
 
 #if DEBUG
+#include <stdio.h>
+#include <stdlib.h>
 #define assert(a) if (!(a)) {printf("Assert: " # a); exit(1);}
 #define TRACE(fmt, ...) fprintf (stdout, "[%s()] " fmt " {ln:%d, fn:" __FILE__ "}\n", __func__, ##__VA_ARGS__, __LINE__)
 #else
 #define assert(a)
 #define TRACE(...)
 #endif
+
+
+#ifdef __WIN32__                // or whatever
+#define PRIiSZ "ld"
+#define PRIuSZ "Iu"
+#else
+#define PRIiSZ "zd"
+#define PRIuSZ "zu"
+#endif
+#define PRIiOFF "lld"
+#define PRIuOFF "llu"
+
+#define DBGMSG(a,b, ...) TRACE( #__VA_ARGS__ )
+
+typedef int (* pf_bsearch_cb_comp_t)(void *userdata, size_t idx, void * data_pin); /*"data_list[idx] - *data_pin"*/
+/**
+ * @brief 折半方式查找记录
+ *
+ * @param userdata : 用户数据指针
+ * @param num_data : 数据个数
+ * @param cb_comp : 比较两个数据的回调函数
+ * @param data_pinpoint : 所要查找的 匹配数据指针
+ * @param ret_idx : 查找到的位置;如果没有找到，则返回如添加该记录时其所在的位置。
+ *
+ * @return 找到则返回0，否则返回<0
+ *
+ * 折半方式查找记录, psl->marr 中指向的数据已经以先小后大方式排好序
+ */
+/**
+ * @brief Using binary search to find the position by data_pin
+ *
+ * @param userdata : User's data
+ * @param num_data : the item number of the sorted data
+ * @param cb_comp : the callback function to compare the user's data and pin
+ * @param data_pin : The reference data to be found
+ * @param ret_idx : the position of the required data; If failed, then it is the failed position, which is the insert position if possible.
+ *
+ * @return 0 on found, <0 on failed(fail position is saved by ret_idx)
+ *
+ * Using binary search to find the position by data_pin. The user's data should be sorted.
+ */
+int
+pf_bsearch_r (void *userdata, size_t num_data, pf_bsearch_cb_comp_t cb_comp, void *data_pinpoint, size_t *ret_idx)
+{
+    int retcomp;
+    uint8_t flg_found;
+    size_t ileft;
+    size_t iright;
+    size_t i;
+
+    assert (NULL != ret_idx);
+    /* 查找合适的位置 */
+    if (num_data < 1) {
+        *ret_idx = 0;
+        DBGMSG (PFDBG_CATLOG_PF, PFDBG_LEVEL_ERROR, "num_data(%"PRIuSZ") < 1", num_data);
+        return -1;
+    }
+
+    /* 折半查找 */
+    /* 为了不出现负数，以免缩小索引的所表示的数据范围
+     * (负数表明减少一位二进制位的使用)，
+     * 内部 ileft 和 iright使用从1开始的下标，
+     *   即1表示C语言中的0, 2表示语言中的1，以此类推。
+     * 对外还是使用以 0 为开始的下标
+     */
+    i = 0;
+    ileft = 1;
+    iright = num_data;
+    flg_found = 0;
+    for (; ileft <= iright;) {
+        i = (ileft + iright) / 2 - 1;
+        /* cb_comp should return the *userdata[i] - *data_pinpoint */
+        retcomp = cb_comp (userdata, i, data_pinpoint);
+        if (retcomp > 0) {
+            iright = i;
+        } else if (retcomp < 0) {
+            ileft = i + 2;
+        } else {
+            /* found ! */
+            flg_found = 1;
+            break;
+        }
+    }
+
+    if (flg_found) {
+        *ret_idx = i;
+        return 0;
+    }
+    if (iright <= i) {
+        *ret_idx = i;
+    } else if (ileft >= i + 2) {
+        *ret_idx = i + 1;
+    }
+    DBGMSG (PFDBG_CATLOG_PF, PFDBG_LEVEL_DEBUG, "not found! num_data=%"PRIuSZ"; ileft=%"PRIuSZ", iright=%"PRIuSZ", i=%"PRIuSZ"", num_data, ileft, iright, i);
+    return -1;
+}
 
 static wchar_t
 get_val_utf82uni (uint8_t *pstart)
@@ -196,99 +296,45 @@ fontinfo_compare (u8g_fontinfo_t * v1, u8g_fontinfo_t * v2)
     return 0;
 }
 
-#if ! USE_RBTREE_LINUX
-RB_HEAD(_u8g_fontinfo_entries_t, _u8g_fontinfo_t);
-RB_PROTOTYPE(_u8g_fontinfo_entries_t, _u8g_fontinfo_t, node, fontinfo_compare);
-RB_GENERATE(_u8g_fontinfo_entries_t, _u8g_fontinfo_t, node, fontinfo_compare);
-#endif
-
-
+/*"data_list[idx] - *data_pin"*/
 static int
-fontgroup_insert (font_group_t * root, u8g_fontinfo_t *data)
+pf_bsearch_cb_comp_fntifo_pgm (void *userdata, size_t idx, void * data_pin)
 {
-#if USE_RBTREE_LINUX
-    struct rb_node **new1 = &(root->rb_node), *parent = NULL;
-    // Figure out where to put new node
-    while (*new1) {
-        u8g_fontinfo_t *this1 = container_of(*new1, u8g_fontinfo_t, node);
-
-        int result = fontinfo_compare (data, this1);
-
-        parent = *new1;
-        if (result < 0) {
-            new1 = &((*new1)->rb_left);
-        } else if (result > 0) {
-            new1 = &((*new1)->rb_right);
-        } else {
-            return FALSE;
-        }
-    }
-
-    // Add new node and rebalance tree.
-    rb_link_node(&data->node, parent, new1);
-    rb_insert_color(&data->node, root);
-
-#else
-    RB_INSERT(_u8g_fontinfo_entries_t, root, data);
-#endif
-
-    return TRUE;
+    u8g_fontinfo_t * fntinfo = (u8g_fontinfo_t *) userdata;
+    u8g_fontinfo_t localval;
+    memcpy_P (&localval, fntinfo + idx, sizeof (localval));
+    return fontinfo_compare (&localval, data_pin);
 }
+
+typedef struct _font_group_t {
+    u8g_fontinfo_t * m_fntifo;
+    int m_fntinfo_num;
+} font_group_t;
 
 static int
 fontgroup_init (font_group_t * root, u8g_fontinfo_t * fntinfo, int number)
 {
-    int i;
-
-    for (i = 0; i < number; i ++) {
-        fontgroup_insert (root, &fntinfo[i]);
-    }
+    root->m_fntifo = fntinfo;
+    root->m_fntinfo_num = number;
 
     return 0;
-}
-
-static u8g_fontinfo_t *
-fontgroup_first (font_group_t * root)
-{
-    u8g_fontinfo_t *data = NULL;
-    RB_FOREACH(data, _u8g_fontinfo_entries_t, root)
-        return data;
-    return NULL;
 }
 
 static const font_t *
 fontgroup_find (font_group_t * root, wchar_t val)
 {
-    u8g_fontinfo_t *data = NULL;
-    // calculate the page
     u8g_fontinfo_t vcmp = {val / 128, val % 128 + 128, val % 128 + 128, 0, 0};
+    size_t idx = 0;
 
-#if USE_RBTREE_LINUX
-    struct rb_node *node = root->rb_node;
-
-    while (node) {
-        int result;
-        data = container_of(node, u8g_fontinfo_t, node);
-
-        result = fontinfo_compare (&vcmp, data);
-
-        if (result < 0) {
-            node = node->rb_left;
-        } else if (result > 0) {
-            node = node->rb_right;
-        } else {
-            return data->fntdata;
-        }
+    if (val < 128) {
+        return U8G_DEFAULT_FONT;
     }
-#else
-    data = RB_FIND (_u8g_fontinfo_entries_t, root, &vcmp);
-    if (NULL != data) {
-        return data->fntdata;
+
+    if (pf_bsearch_r ((void *)root->m_fntifo, root->m_fntinfo_num, pf_bsearch_cb_comp_fntifo_pgm, (void *)&vcmp, &idx) < 0) {
+        return NULL;
     }
-    // dump values:
-    // RB_FOREACH(data, _u8g_fontinfo_entries_t, root) printf("%d\n", data->fntdata);
-#endif
-    return NULL;
+    memcpy_P (&vcmp, root->m_fntifo + idx, sizeof (vcmp));
+    return vcmp.fntdata;
 }
 
 static int
@@ -329,15 +375,8 @@ fontgroup_drawstring (font_group_t * group, font_t *fnt_default, const char *utf
 }
 
 
-#if USE_RBTREE_LINUX
-font_group_t g_fontgroup_root = RB_ROOT;
-#else
-font_group_t g_fontgroup_root = RB_INITIALIZER(&g_fontgroup_root);
-#endif
-
 char flag_fontgroup_inited = 0;
-
-#define fontinfo_find(val)              fontinfo_find0((font_group_t *)(&g_fontgroup_root), val)
+static font_group_t g_fontgroup_root = {NULL, 0};
 
 /**
  * @brief check if font is loaded
@@ -349,7 +388,7 @@ u8g_Utf8FontIsInited(void)
 }
 
 int
-u8g_SetUtf8Fonts (u8g_fontinfo_t * fntinfo, int number)
+u8g_SetUtf8Fonts (const u8g_fontinfo_t * fntinfo, int number)
 {
     flag_fontgroup_inited = 1;
     return fontgroup_init (&g_fontgroup_root, fntinfo, number);

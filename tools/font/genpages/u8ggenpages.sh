@@ -160,7 +160,7 @@ echo "" >> fontutf8-data.h
 cat tmpa >> fontutf8-data.h
 echo "" >> fontutf8-data.h
 echo "#define FONTDATA_ITEM(page, begin, end, data) {page, begin, end, NUM_ARRAY(data), data}" >> fontutf8-data.h
-echo "u8g_fontinfo_t g_fontinfo[] = {" >> fontutf8-data.h
+echo "static const u8g_fontinfo_t g_fontinfo[] PROGMEM = {" >> fontutf8-data.h
 cat tmpb >> fontutf8-data.h
 echo "};" >> fontutf8-data.h
 

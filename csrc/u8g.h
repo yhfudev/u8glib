@@ -1279,13 +1279,6 @@ u8g_uint_t u8g_DrawStr270P(u8g_t *u8g, u8g_uint_t x, u8g_uint_t y, const u8g_pgm
 
 
 // utf-8 string in source code
-#define USE_RBTREE_LINUX 0
-
-#if USE_RBTREE_LINUX
-#include "rbtree.h"
-#else
-#include "tree-bsd.h"
-#endif
 
 #define NUM_ARRAY(a) (sizeof(a)/sizeof(a[0]))
 #define _U8GT(a) a
@@ -1298,15 +1291,9 @@ typedef struct _u8g_fontinfo_t {
     int end;
     int size;
     const u8g_fntpgm_uint8_t *fntdata;
-
-#if USE_RBTREE_LINUX
-    struct rb_node node;
-#else
-    RB_ENTRY(_u8g_fontinfo_t) node;
-#endif
 } u8g_fontinfo_t;
 
-extern int u8g_SetUtf8Fonts (u8g_fontinfo_t * fntinfo, int number);
+extern int u8g_SetUtf8Fonts (const u8g_fontinfo_t * fntinfo, int number); // fntinfo is type of PROGMEM
 extern char u8g_Utf8FontIsInited(void);
 extern void u8g_DrawUtf8Str (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg);
 extern void u8g_DrawUtf8StrP (u8g_t *pu8g, unsigned int x, unsigned int y, const char *utf8_msg);
