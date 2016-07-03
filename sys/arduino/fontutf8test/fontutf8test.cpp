@@ -34,33 +34,34 @@
 
 #if defined(ARDUINO) || defined(U8G_RASPBERRY_PI)
 
-#if 0
-#define OLED_MOSI   9 // SDA
-#define OLED_CLK   10 // SCL
-#define OLED_DC    11 // D/C (data or command)
-#define OLED_CS    12 // no such pin
-#define OLED_RESET 13 // RST
-#else
-#define OLED_MOSI   4 // SDA
-#define OLED_CLK    5 // SCL
-#define OLED_DC     2 // D/C (data or command)
-#define OLED_CS    12 // no such pin
-#define OLED_RESET  3 // RST
-#endif
+#define OLED_SPI1_CS    7   //   ---   x Not Connected
+#define OLED_SPI1_DC   10   //   D/C   pin# 6 (data or command)
+#define OLED_SPI1_RST   2   //   RST   pin# 5 U8G_PIN_NONE
+#define OLED_SPI1_MOSI  4   //   SDA   pin# 4
+#define OLED_SPI1_CLK   6   //   SCL   pin# 3
 
 // SW SPI Com: SCK = 10, MOSI = 9, CS = 12, A0 = 11, reset=13
-#define U8GVAL_SCK   OLED_CLK
-#define U8GVAL_MOSI  OLED_MOSI
-#define U8GVAL_CS    OLED_CS
-#define U8GVAL_A0    OLED_DC
-#define U8GVAL_RESET OLED_RESET
-//U8GLIB_SH1106_128X64 u8g(U8GVAL_SCK, U8GVAL_MOSI, U8GVAL_CS, U8GVAL_A0, U8GVAL_RESET);
+//U8GLIB_SH1106_128X64 u8g(OLED_SPI1_CLK, OLED_SPI1_MOSI, OLED_SPI1_CS, OLED_SPI1_DC, OLED_SPI1_RST);
 
-
-U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
-//U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE|U8G_I2C_OPT_DEV_0);
+//U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK); // I2C
+//U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE|U8G_I2C_OPT_DEV_0); // I2C
 // 或者
-//U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);
+//U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST); // I2C
+U8GLIB_SSD1306_128X64 u8g(OLED_SPI1_CLK, OLED_SPI1_MOSI, OLED_SPI1_CS, OLED_SPI1_DC, OLED_SPI1_RST); // SPI
+
+// the pins
+//https://www.youtube.com/watch?v=4CD8ERaylmY
+//U8GLIB_ST7920_128X64_1X u8g(13/*SCK=en, E1.5*/, 11/*MOSI, E1.3*/, 12/*CS, E1.4*/);	// SPI Com: SCK = en = 23, MOSI = rw = 17, CS = di = 16
+// E1.9 GND
+// E1.10 +5V
+
+/*
+Arduino digital pin
+
+clockPin --> SCK(EN) Arduino D13
+latchPin --> CS(RS)          D12
+dataPin --> SID(RW)          D11
+*/
 
 #else
 // SDL
@@ -107,6 +108,7 @@ void u8g_ascii() {
 char * teststrings[] = {
     _U8GT("黄沙百戰穿金甲"),
     _U8GT("不破樓蘭終不還"),
+    _U8GT("abfgjlpyx"),
     _U8GT("ナイン"),
     _U8GT("セード ンウニユウアレマシタ"),
     _U8GT("セードゼアリマセン"),

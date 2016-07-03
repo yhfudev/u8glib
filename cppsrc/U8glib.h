@@ -206,6 +206,7 @@ class U8GLIB : public Print
     u8g_uint_t getStrPixelWidth(const __FlashStringHelper *s) { return u8g_GetStrPixelWidthP(&u8g, (u8g_pgm_uint8_t *)s); }
     u8g_uint_t getStrWidth(const __FlashStringHelper *s) { return u8g_GetStrWidthP(&u8g, (u8g_pgm_uint8_t *)s); }
 #endif
+
     // u8g_SetUtf8Fonts() in u8g.h
     void drawUtf8Str (unsigned int x, unsigned int y, const char *utf8_msg) { u8g_DrawUtf8Str(&u8g, x, y, utf8_msg); }
     void drawUtf8StrP (unsigned int x, unsigned int y, const char *utf8_msg) { u8g_DrawUtf8StrP(&u8g, x, y, utf8_msg); }
@@ -973,6 +974,34 @@ class U8GLIB_SSD1306_128X32_2X : public U8GLIB
       { }
 };
 
+class U8GLIB_SSD1306_64X48 : public U8GLIB 
+{
+  public:
+    U8GLIB_SSD1306_64X48(uint8_t sck, uint8_t mosi, uint8_t cs, uint8_t a0, uint8_t reset = U8G_PIN_NONE) 
+      : U8GLIB(&u8g_dev_ssd1306_64x48_sw_spi, sck, mosi, cs, a0, reset)
+      { }
+    U8GLIB_SSD1306_64X48(uint8_t cs, uint8_t a0, uint8_t reset = U8G_PIN_NONE) 
+      : U8GLIB(&u8g_dev_ssd1306_64x48_hw_spi, cs, a0, reset)
+      { }
+    U8GLIB_SSD1306_64X48(uint8_t options = U8G_I2C_OPT_NONE) 
+      : U8GLIB(&u8g_dev_ssd1306_64x48_i2c, options)
+      { }
+};
+
+class U8GLIB_SSD1306_64X48_2X : public U8GLIB 
+{
+  public:
+    U8GLIB_SSD1306_64X48_2X(uint8_t sck, uint8_t mosi, uint8_t cs, uint8_t a0, uint8_t reset = U8G_PIN_NONE) 
+      : U8GLIB(&u8g_dev_ssd1306_64x48_2x_sw_spi, sck, mosi, cs, a0, reset)
+      { }
+    U8GLIB_SSD1306_64X48_2X(uint8_t cs, uint8_t a0, uint8_t reset = U8G_PIN_NONE) 
+      : U8GLIB(&u8g_dev_ssd1306_64x48_2x_hw_spi, cs, a0, reset)
+      { }
+    U8GLIB_SSD1306_64X48_2X(uint8_t options = U8G_I2C_OPT_NONE) 
+      : U8GLIB(&u8g_dev_ssd1306_64x48_2x_i2c, options)
+      { }
+};
+
 
 class U8GLIB_NHD27OLED_GR : public U8GLIB 
 {
@@ -1038,6 +1067,10 @@ class U8GLIB_LD7032_60x32 : public U8GLIB
         uint8_t en, uint8_t cs1, uint8_t di, uint8_t rw = U8G_PIN_NONE, uint8_t reset = U8G_PIN_NONE) 
       : U8GLIB(&u8g_dev_ld7032_60x32_parallel, d0, d1, d2, d3, d4, d5, d6, d7, en, cs1, U8G_PIN_NONE, di, rw, reset)
       { }
+    U8GLIB_LD7032_60x32(uint8_t options = U8G_I2C_OPT_NONE) 
+      : U8GLIB(&u8g_dev_ld7032_60x32_i2c, options)
+      { }
+
 };
 
 
