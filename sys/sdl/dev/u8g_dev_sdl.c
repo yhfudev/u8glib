@@ -17,6 +17,11 @@ SDL_Surface *u8g_sdl_screen;
 int u8g_sdl_multiple = 2;
 Uint32 u8g_sdl_color[256];
 
+SDL_Window *sdlWindow;
+SDL_Renderer *sdlRenderer;
+SDL_Surface *screen;
+SDL_Texture *sdlTexture;
+
 void u8g_sdl_set_pixel(int x, int y, int idx)
 {
   Uint32  *ptr;
@@ -122,9 +127,18 @@ void u8g_sdl_init(void)
     printf("Unable to initialize SDL:  %s\n", SDL_GetError());
     exit(1);
   }
-  
-  /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_SetVideoMode */
-  u8g_sdl_screen = SDL_SetVideoMode(WIDTH*u8g_sdl_multiple,HEIGHT*u8g_sdl_multiple,32,SDL_SWSURFACE|SDL_ANYFORMAT);
+
+  SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &sdlWindow, &sdlRenderer);
+  screen = SDL_CreateRGBSurface(0, WIDTH*u8g_sdl_multiple, HEIGHT*u8g_sdl_multiple, 32,
+                                        0x00FF0000,
+                                        0x0000FF00,
+                                        0x000000FF,
+                                        0xFF000000);
+  sdlTexture = SDL_CreateTexture(sdlRenderer,
+                                            SDL_PIXELFORMAT_ARGB8888,
+                                            SDL_TEXTUREACCESS_STREAMING,
+                                            WIDTH*u8g_sdl_multiple, HEIGHT*u8g_sdl_multiple);
+  u8g_sdl_screen = screen;
   if ( u8g_sdl_screen == NULL ) 
   {
     printf("Couldn't set video mode: %s\n", SDL_GetError());
@@ -145,8 +159,10 @@ void u8g_sdl_init(void)
   */
 
   /* update all */
-  /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-  SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+  SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+  SDL_RenderClear(sdlRenderer);
+  SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+  SDL_RenderPresent(sdlRenderer);
 
   atexit(SDL_Quit);
   return;
@@ -160,9 +176,19 @@ void u8g_sdl_init_R3G3B2(void)
     printf("Unable to initialize SDL:  %s\n", SDL_GetError());
     exit(1);
   }
-  
-  /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_SetVideoMode */
-  u8g_sdl_screen = SDL_SetVideoMode(WIDTH*u8g_sdl_multiple,HEIGHT*u8g_sdl_multiple,32,SDL_SWSURFACE|SDL_ANYFORMAT);
+
+  SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &sdlWindow, &sdlRenderer);
+
+  screen = SDL_CreateRGBSurface(0, WIDTH*u8g_sdl_multiple, HEIGHT*u8g_sdl_multiple, 32,
+                                        0x00FF0000,
+                                        0x0000FF00,
+                                        0x000000FF,
+                                        0xFF000000);
+  sdlTexture = SDL_CreateTexture(sdlRenderer,
+                                            SDL_PIXELFORMAT_ARGB8888,
+                                            SDL_TEXTUREACCESS_STREAMING,
+                                            WIDTH*u8g_sdl_multiple, HEIGHT*u8g_sdl_multiple);
+  u8g_sdl_screen = screen;
   if ( u8g_sdl_screen == NULL ) 
   {
     printf("Couldn't set video mode: %s\n", SDL_GetError());
@@ -193,9 +219,10 @@ void u8g_sdl_init_R3G3B2(void)
   }
 
   /* update all */
-  /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-  SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
-  
+  SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+  SDL_RenderClear(sdlRenderer);
+  SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+  SDL_RenderPresent(sdlRenderer);
 
   atexit(SDL_Quit);
   return;
@@ -307,8 +334,11 @@ uint8_t u8g_dev_sdl_1bit_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *arg)
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pb8v1_base_fn(u8g, dev, msg, arg);
@@ -345,8 +375,11 @@ uint8_t u8g_dev_sdl_1bit_h_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *arg
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pb8h1_base_fn(u8g, dev, msg, arg);
@@ -385,8 +418,11 @@ uint8_t u8g_dev_sdl_2bit_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *arg)
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pb8v2_base_fn(u8g, dev, msg, arg);
@@ -438,8 +474,11 @@ uint8_t u8g_dev_sdl_2bit_double_mem_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, 
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pb16v2_base_fn(u8g, dev, msg, arg);
@@ -483,8 +522,11 @@ uint8_t u8g_dev_sdl_8bit_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *arg)
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pb8h8_base_fn(u8g, dev, msg, arg);
@@ -525,8 +567,11 @@ uint8_t u8g_dev_sdl_hicolor_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *ar
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pbxh16_base_fn(u8g, dev, msg, arg);
@@ -568,8 +613,11 @@ uint8_t u8g_dev_sdl_fullcolor_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *
         }
       }
       /* update all */
-      /* http://www.libsdl.org/cgi/docwiki.cgi/SDL_UpdateRect */
-      SDL_UpdateRect(u8g_sdl_screen, 0,0,0,0);
+      SDL_UpdateTexture(sdlTexture, NULL, screen->pixels, screen->pitch);
+      SDL_RenderClear(sdlRenderer);
+      SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+      SDL_RenderPresent(sdlRenderer);
+
       break;    /* continue to base fn */
   }
   return u8g_dev_pbxh24_base_fn(u8g, dev, msg, arg);

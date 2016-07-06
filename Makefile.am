@@ -209,13 +209,13 @@ libu8gsdl_la_SOURCES=$(SRC_SDL)
 
 libu8gwpi_la_SOURCES=$(SRC_WPI)
 
-libu8gbase_la_CFLAGS=-Icsrc -Icppsrc -Inonarduino -DU8G_16BIT `sdl-config --cflags`
+libu8gbase_la_CFLAGS=-Icsrc -Icppsrc -Inonarduino -DU8G_16BIT `sdl2-config --cflags`
 libu8gbase_la_CPPFLAGS=$(libu8gbase_la_CFLAGS)
 libu8gbase_la_LDFLAGS=
 
-libu8gsdl_la_CFLAGS=-Icsrc -Icppsrc -Inonarduino -DU8G_16BIT `sdl-config --cflags`
+libu8gsdl_la_CFLAGS=-Icsrc -Icppsrc -Inonarduino -DU8G_16BIT `sdl2-config --cflags`
 libu8gsdl_la_CPPFLAGS=$(libu8gsdl_la_CFLAGS)
-libu8gsdl_la_LDFLAGS=`sdl-config --libs`
+libu8gsdl_la_LDFLAGS=`sdl2-config --libs`
 libu8gsdl_la_LIBADD=$(top_builddir)/libu8gbase.la
 
 libu8gwpi_la_CFLAGS=-Icsrc -Icppsrc -Inonarduino -DU8G_16BIT -DU8G_RASPBERRY_PI -DU8G_WITH_PINLIST
