@@ -201,7 +201,7 @@ include_HEADERS = \
 
 noinst_HEADERS=
 
-lib_LTLIBRARIES=libu8gbase.la libu8gsdl.la libu8gwpi.la
+lib_LTLIBRARIES=libu8gbase.la libu8gsdl.la #libu8gwpi.la
 
 libu8gbase_la_SOURCES=$(SRC_BASE)
 
@@ -230,8 +230,9 @@ BIN_SDL= \
     u8gsdl_chess u8gsdl_spacetrash \
     u8gsdl_clip \
     $(NULL)
-
-BIN_WPI=u8gwpi_chess u8gwpi_chessdogm u8gwpi_gtest u8gwpi_logo u8gwpi_spacetrash
+#
+#BIN_WPI=u8gwpi_chess u8gwpi_chessdogm u8gwpi_gtest u8gwpi_logo u8gwpi_spacetrash
+BIN_WPI=
 
 BIN_TOOLS=bdf2u8g
 bdf2u8g_SOURCES= \
@@ -339,7 +340,7 @@ u8gsdl_xbm_LDFLAGS=-lu8gbase -lu8gsdl $(libu8gsdl_la_LDFLAGS)
 
 .pde.cpp:
 	cp $< $@
-.ino.o:
+.ino.cpp:
 	cp $< $@
 
 #u8gwpi_logo_SOURCES=sys/arm/examples/u8g_logo/u8g_logo.c

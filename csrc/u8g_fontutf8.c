@@ -88,7 +88,7 @@ typedef int (* pf_bsearch_cb_comp_t)(void *userdata, size_t idx, void * data_pin
  *
  * Using binary search to find the position by data_pin. The user's data should be sorted.
  */
-int
+static int
 pf_bsearch_r (void *userdata, size_t num_data, pf_bsearch_cb_comp_t cb_comp, void *data_pinpoint, size_t *ret_idx)
 {
     int retcomp;
